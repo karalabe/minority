@@ -21,10 +21,8 @@ import (
 
 // Config is the set of options to fine tune the messaging cluster.
 type Config struct {
-	ExternalIP   *net.IPAddr // External IP address to advertise for the local broker
-	ExternalPort int         // External port number to advertise for the local broker
-
-	Logger log.Logger // Logger to allow differentiating clusters if many is embedded
+	External *net.TCPAddr // External address to advertise for the local broker
+	Logger   log.Logger   // Logger to allow differentiating clusters if many is embedded
 }
 
 // API request to have the local cluster join with a remote one.
@@ -55,20 +53,17 @@ func New(config *Config, broker *broker.Broker) (*Cluster, error) {
 	// Create an idle cluster
 	self := broker.Name()
 
-	address := &net.TCPAddr{
-		IP:   config.ExternalIP.IP,
-		Port: config.ExternalPort,
-		Zone: config.ExternalIP.Zone,
-	}
 	logger := config.Logger
 	if logger == nil {
 		logger = log.New()
 	}
+	logger.Info("Starting cluster manager", "endpoint", config.External)
+
 	cluster := &Cluster{
-		address: address,
+		address: config.External,
 		broker:  broker,
 		nodes: map[string]*net.TCPAddr{
-			self: address,
+			self: config.External,
 		},
 		times: map[string]uint64{
 			self: uint64(time.Now().UnixNano()),

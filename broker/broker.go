@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 	"path/filepath"
 
@@ -15,10 +16,10 @@ import (
 
 // Config is the set of options to fine tune the message broker.
 type Config struct {
-	Name       string // Globally unique name for the broker instance
-	Datadir    string // Data directory to store NSQ related data
-	Passphrase string // Shared secret to authenticate into te NSQ cluster
-	Port       int    // Port number to listen on for NSQ connections
+	Name     string       // Globally unique name for the broker instance
+	Datadir  string       // Data directory to store NSQ related data
+	Secret   string       // Shared secret to authenticate into te NSQ cluster
+	Listener *net.TCPAddr // Listener address to for NSQ connections
 
 	Logger log.Logger // Logger to allow differentiating brokers if many is embedded
 }
@@ -45,20 +46,32 @@ func New(config *Config) (*Broker, error) {
 	if !nsq.IsValidChannelName(config.Name) {
 		return nil, fmt.Errorf("invalid broker name '%s', must be alphanumeric", config.Name)
 	}
+	logger := config.Logger
+	if logger == nil {
+		logger = log.New()
+	}
+	logger.Info("Starting message broker", "name", config.Name, "datadir", config.Datadir, "bind", config.Listener)
+
 	// Configure a new NSQ message broker to act as the multiplexer
 	opts := nsqd.NewOptions()
 	opts.DataPath = config.Datadir
 
-	opts.TCPAddress = fmt.Sprintf("0.0.0.0:%d", config.Port)
+	if config.Listener != nil {
+		opts.TCPAddress = config.Listener.String()
+	} else {
+		opts.TCPAddress = "0.0.0.0:0" // Default to a random port, public routing
+	}
 	opts.HTTPAddress = ""  // Disable the HTTP interface
 	opts.HTTPSAddress = "" // Disable the HTTPS interface
 
-	opts.LogLevel = nsqd.LOG_DEBUG           // We'd like to receive all the broker messages
-	opts.Logger = &nsqdLogger{config.Logger} // Replace the default stderr logger with ours
+	opts.LogLevel = nsqd.LOG_DEBUG    // We'd like to receive all the broker messages
+	opts.Logger = &nsqdLogger{logger} // Replace the default stderr logger with ours
 
 	// Create an ephemeral key on disk and delete as soon as it's loaded. It's
 	// needed to work around the NSQ library limitation.
-	cert, key := makeTLSCert(config.Passphrase)
+	cert, key := makeTLSCert(config.Secret)
+	os.MkdirAll(config.Datadir, 0700)
+
 	if err := ioutil.WriteFile(filepath.Join(config.Datadir, "secret.cert"), cert, 0600); err != nil {
 		return nil, err
 	}
@@ -89,7 +102,7 @@ func New(config *Config) (*Broker, error) {
 		tlsCert: cert,
 		tlsKey:  key,
 		daemon:  daemon,
-		logger:  config.Logger,
+		logger:  logger,
 	}, nil
 }
 

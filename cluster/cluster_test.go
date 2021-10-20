@@ -13,9 +13,7 @@ import (
 )
 
 // ipv4Localhost is the localhost address used by all tests.
-var ipv4Localhost = &net.IPAddr{
-	IP: net.IPv4(127, 0, 0, 1),
-}
+var ipv4Localhost = net.IPv4(127, 0, 0, 1)
 
 // Tests that the cluster can be started and torn down.
 func TestClusterLifecycle(t *testing.T) {
@@ -23,17 +21,19 @@ func TestClusterLifecycle(t *testing.T) {
 	datadir, _ := ioutil.TempDir("", "")
 	defer os.RemoveAll(datadir)
 
-	broker, _ := broker.New(&broker.Config{
-		Name:       "test-broker",
-		Datadir:    datadir,
-		Passphrase: "secret test seed",
+	broker, err := broker.New(&broker.Config{
+		Name:    "test-broker",
+		Datadir: datadir,
+		Secret:  "secret test seed",
 	})
 	defer broker.Close()
 
 	// Wrap the broker into a cluster and check its lifecycle
 	cluster, err := New(&Config{
-		ExternalIP:   ipv4Localhost,
-		ExternalPort: broker.Port(),
+		External: &net.TCPAddr{
+			IP:   ipv4Localhost,
+			Port: broker.Port(),
+		},
 	}, broker)
 	if err != nil {
 		t.Fatalf("Failed to start cluster: %v", err)
@@ -60,11 +60,11 @@ func TestClusterConvergence(t *testing.T) {
 	brokerC, _ := broker.New(&broker.Config{Name: "test-broker-C", Datadir: datadirC, Logger: log.New("tester", "C")})
 	defer brokerC.Close()
 
-	clusterA, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerA.Port(), Logger: log.New("tester", "A")}, brokerA)
+	clusterA, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerA.Port()}, Logger: log.New("tester", "A")}, brokerA)
 	defer clusterA.Close()
-	clusterB, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerB.Port(), Logger: log.New("tester", "B")}, brokerB)
+	clusterB, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerB.Port()}, Logger: log.New("tester", "B")}, brokerB)
 	defer clusterB.Close()
-	clusterC, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerC.Port(), Logger: log.New("tester", "C")}, brokerC)
+	clusterC, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerC.Port()}, Logger: log.New("tester", "C")}, brokerC)
 	defer clusterC.Close()
 
 	// Join together the clusters and check that the operations are accepted
@@ -109,11 +109,11 @@ func TestRenameConvergence(t *testing.T) {
 	brokerC, _ := broker.New(&broker.Config{Name: "test-broker-C", Datadir: datadirC, Logger: log.New("tester", "C")})
 	defer brokerC.Close()
 
-	clusterA, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerA.Port(), Logger: log.New("tester", "A")}, brokerA)
+	clusterA, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerA.Port()}, Logger: log.New("tester", "A")}, brokerA)
 	defer clusterA.Close()
-	clusterB, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerB.Port(), Logger: log.New("tester", "B")}, brokerB)
+	clusterB, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerB.Port()}, Logger: log.New("tester", "B")}, brokerB)
 	defer clusterB.Close()
-	clusterC, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerC.Port(), Logger: log.New("tester", "C")}, brokerC)
+	clusterC, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerC.Port()}, Logger: log.New("tester", "C")}, brokerC)
 	defer clusterC.Close()
 
 	// Join together the clusters and check that the operations are accepted
@@ -140,10 +140,10 @@ func TestRenameConvergence(t *testing.T) {
 	clusterA.Close()
 	brokerA.Close()
 
-	brokerA, _ = broker.New(&broker.Config{Name: "test-broker-A2", Datadir: datadirA, Port: externalA.Port, Logger: log.New("tester", "A2")})
+	brokerA, _ = broker.New(&broker.Config{Name: "test-broker-A2", Datadir: datadirA, Listener: externalA, Logger: log.New("tester", "A2")})
 	defer brokerA.Close()
 
-	clusterA, _ = New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerA.Port(), Logger: log.New("tester", "A2")}, brokerA)
+	clusterA, _ = New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerA.Port()}, Logger: log.New("tester", "A2")}, brokerA)
 	defer clusterA.Close()
 
 	// Since there's no event happening to detect cluster downtime, force a join
@@ -182,11 +182,11 @@ func TestOfflineRenameConvergence(t *testing.T) {
 	brokerC, _ := broker.New(&broker.Config{Name: "test-broker-C", Datadir: datadirC, Logger: log.New("tester", "C")})
 	defer brokerC.Close()
 
-	clusterA, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerA.Port(), Logger: log.New("tester", "A")}, brokerA)
+	clusterA, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerA.Port()}, Logger: log.New("tester", "A")}, brokerA)
 	defer clusterA.Close()
-	clusterB, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerB.Port(), Logger: log.New("tester", "B")}, brokerB)
+	clusterB, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerB.Port()}, Logger: log.New("tester", "B")}, brokerB)
 	defer clusterB.Close()
-	clusterC, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerC.Port(), Logger: log.New("tester", "C")}, brokerC)
+	clusterC, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerC.Port()}, Logger: log.New("tester", "C")}, brokerC)
 	defer clusterC.Close()
 
 	// Join together two clusters and then split them apart
@@ -216,10 +216,10 @@ func TestOfflineRenameConvergence(t *testing.T) {
 	// TODO(karalabe): check partial convergence?
 
 	// Restart the terminated cluster with a new name
-	brokerA, _ = broker.New(&broker.Config{Name: "test-broker-A2", Datadir: datadirA, Port: externalA.Port, Logger: log.New("tester", "A2")})
+	brokerA, _ = broker.New(&broker.Config{Name: "test-broker-A2", Datadir: datadirA, Listener: externalA, Logger: log.New("tester", "A2")})
 	defer brokerA.Close()
 
-	clusterA, _ = New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerA.Port(), Logger: log.New("tester", "A2")}, brokerA)
+	clusterA, _ = New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerA.Port()}, Logger: log.New("tester", "A2")}, brokerA)
 	defer clusterA.Close()
 
 	// Since there's no event happening to detect cluster downtime, force a join
@@ -257,11 +257,11 @@ func TestRedeployConvergence(t *testing.T) {
 	brokerC, _ := broker.New(&broker.Config{Name: "test-broker-C", Datadir: datadirC, Logger: log.New("tester", "C")})
 	defer brokerC.Close()
 
-	clusterA, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerA.Port(), Logger: log.New("tester", "A")}, brokerA)
+	clusterA, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerA.Port()}, Logger: log.New("tester", "A")}, brokerA)
 	defer clusterA.Close()
-	clusterB, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerB.Port(), Logger: log.New("tester", "B")}, brokerB)
+	clusterB, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerB.Port()}, Logger: log.New("tester", "B")}, brokerB)
 	defer clusterB.Close()
-	clusterC, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerC.Port(), Logger: log.New("tester", "C")}, brokerC)
+	clusterC, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerC.Port()}, Logger: log.New("tester", "C")}, brokerC)
 	defer clusterC.Close()
 
 	// Join together the clusters and check that the operations are accepted
@@ -291,7 +291,7 @@ func TestRedeployConvergence(t *testing.T) {
 	brokerA, _ = broker.New(&broker.Config{Name: "test-broker-A", Datadir: datadirA, Logger: log.New("tester", "A2")})
 	defer brokerA.Close()
 
-	clusterA, _ = New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerA.Port(), Logger: log.New("tester", "A2")}, brokerA)
+	clusterA, _ = New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerA.Port()}, Logger: log.New("tester", "A2")}, brokerA)
 	defer clusterA.Close()
 
 	// Since there's no event happening to detect cluster downtime, force a join
@@ -334,11 +334,11 @@ func TestOfflineRedeployConvergence(t *testing.T) {
 	brokerC, _ := broker.New(&broker.Config{Name: "test-broker-C", Datadir: datadirC, Logger: log.New("tester", "C")})
 	defer brokerC.Close()
 
-	clusterA, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerA.Port(), Logger: log.New("tester", "A")}, brokerA)
+	clusterA, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerA.Port()}, Logger: log.New("tester", "A")}, brokerA)
 	defer clusterA.Close()
-	clusterB, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerB.Port(), Logger: log.New("tester", "B")}, brokerB)
+	clusterB, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerB.Port()}, Logger: log.New("tester", "B")}, brokerB)
 	defer clusterB.Close()
-	clusterC, _ := New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerC.Port(), Logger: log.New("tester", "C")}, brokerC)
+	clusterC, _ := New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerC.Port()}, Logger: log.New("tester", "C")}, brokerC)
 	defer clusterC.Close()
 
 	// Join together two clusters and then split them apart
@@ -371,7 +371,7 @@ func TestOfflineRedeployConvergence(t *testing.T) {
 	brokerA, _ = broker.New(&broker.Config{Name: "test-broker-A", Datadir: datadirA, Logger: log.New("tester", "A2")})
 	defer brokerA.Close()
 
-	clusterA, _ = New(&Config{ExternalIP: ipv4Localhost, ExternalPort: brokerA.Port(), Logger: log.New("tester", "A2")}, brokerA)
+	clusterA, _ = New(&Config{External: &net.TCPAddr{IP: ipv4Localhost, Port: brokerA.Port()}, Logger: log.New("tester", "A2")}, brokerA)
 	defer clusterA.Close()
 
 	// Since there's no event happening to detect cluster downtime, force a join

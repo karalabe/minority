@@ -2,6 +2,7 @@ package broker
 
 import (
 	"io/ioutil"
+	"net"
 	"os"
 	"testing"
 )
@@ -15,10 +16,10 @@ func TestBrokerLifecycle(t *testing.T) {
 	defer os.RemoveAll(datadir)
 
 	broker, err := New(&Config{
-		Name:       "test-broker",
-		Datadir:    datadir,
-		Passphrase: "secret test seed",
-		Port:       0,
+		Name:     "test-broker",
+		Datadir:  datadir,
+		Secret:   "secret test seed",
+		Listener: &net.TCPAddr{IP: net.IPv4zero, Port: 0},
 	})
 	if err != nil {
 		t.Fatalf("Failed to start message broker: %v", err)

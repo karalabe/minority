@@ -26,14 +26,9 @@ func (l *nsqdLogger) Output(maxdepth int, s string) error {
 	}
 	// Create a contextual log and do proper logging
 	var logger log.Logger
-	switch {
-	case l.logger == nil && module == "":
-		logger = log.New()
-	case l.logger == nil:
-		logger = log.New("module", strings.ToLower(module))
-	case module == "":
+	if module == "" {
 		logger = l.logger
-	default:
+	} else {
 		logger = l.logger.New("module", strings.ToLower(module))
 	}
 	switch level {
@@ -70,12 +65,8 @@ func (l *nsqProducerLogger) Output(maxdepth int, s string) error {
 	s = s[len(addr)+2+1:]
 
 	// Create a contextual log and do proper logging
-	var logger log.Logger
-	if l.logger == nil {
-		logger = log.New("id", id, "nsqd", addr)
-	} else {
-		logger = l.logger.New("id", id, "nsqd", addr)
-	}
+	logger := l.logger.New("id", id, "nsqd", addr)
+
 	switch level {
 	case "DBG":
 		logger.Trace("Broker producer emitted log", "msg", s)
@@ -108,12 +99,8 @@ func (l *nsqConsumerLogger) Output(maxdepth int, s string) error {
 	s = s[len(sub)+2+1:]
 
 	// Create a contextual log and do proper logging
-	var logger log.Logger
-	if l.logger == nil {
-		logger = log.New("id", id, "sub", sub)
-	} else {
-		logger = l.logger.New("id", id, "sub", sub)
-	}
+	logger := l.logger.New("id", id, "sub", sub)
+
 	switch level {
 	case "DBG":
 		logger.Trace("Broker consumer emitted log", "msg", s)

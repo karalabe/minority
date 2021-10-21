@@ -380,8 +380,8 @@ github.com/nsqio/go-diskqueue v1.0.0/go.mod h1:INuJIxl4ayUsyoNtHL5+9MFPDfSZ0zY93
 github.com/nsqio/go-nsq v1.0.8/go.mod h1:vKq36oyeVXgsS5Q8YEO7WghqidAVXQlcFxzQbQTuDEY=
 github.com/nsqio/go-nsq v1.0.9-0.20211020185823-54583b581cf3 h1:eH66O8FYZucl/lhHeIrHUAIRmq9COoHPW3T5avHmAwk=
 github.com/nsqio/go-nsq v1.0.9-0.20211020185823-54583b581cf3/go.mod h1:vKq36oyeVXgsS5Q8YEO7WghqidAVXQlcFxzQbQTuDEY=
-github.com/nsqio/nsq v1.2.1 h1:ZVjANYLnX1vPLmuSNCOdiw4nNPnzWgAC4t8wFhznMqU=
-github.com/nsqio/nsq v1.2.1/go.mod h1:vXbwehoIygyVoX44oLFaN7MA0xrmudeuborDpMPiLTY=
+github.com/nsqio/nsq v1.2.2-0.20211021155057-427d89391b82 h1:ng10/JSbrKmtIL687UMpJ++FPJoca1qizhM1jrY3LT0=
+github.com/nsqio/nsq v1.2.2-0.20211021155057-427d89391b82/go.mod h1:RQvSjfmp0ynQrXlyJwL8XY/gVUO9QdtDdoj4LgY8Cqc=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N7AbDhec=

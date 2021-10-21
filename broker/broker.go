@@ -88,7 +88,7 @@ func New(config *Config) (*Broker, error) {
 
 	opts.TLSRequired = nsqd.TLSRequired         // Enable TLS encryption for all traffic
 	opts.TLSClientAuthPolicy = "require-verify" // Require TLS authentication from all clients
-	opts.TLSMinVersion = tls.VersionTLS12       // Require the newest supported TLS protocol  // TODO(karalabe): Fix after https://github.com/nsqio/nsq/pull/1385
+	opts.TLSMinVersion = tls.VersionTLS13       // Require the newest supported TLS protocol
 
 	// Create the NSQ daemon and return it without booting up
 	daemon, err := nsqd.New(opts)

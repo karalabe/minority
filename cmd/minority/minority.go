@@ -28,56 +28,70 @@ func main() {
 	// Configure the logger to print everything
 	log.Root().SetHandler(log.LvlFilterHandler(log.LvlInfo, log.StreamHandler(os.Stderr, log.TerminalFormat(true))))
 
-	var cmdBootnodeRelay = &cobra.Command{
+	// Create the commands to run relay instances
+	cmdBootnode := &cobra.Command{
 		Use:   "bootnode",
-		Short: "Run a noop multiplexer to help maintain the cluster",
+		Short: "Run a multiplexer relay to upkeep the cluster",
 		Run:   runRelay,
 	}
-	cmdBootnodeRelay.Flags().StringVar(&identityFlag, "node.identity", "", "Unique identifier for this node across the entire cluster")
-	cmdBootnodeRelay.Flags().StringVar(&datadirFlag, "node.datadir", filepath.Join(os.Getenv("HOME"), ".minority", "<uid>"), "Folder to persist state through restarts")
-	cmdBootnodeRelay.Flags().StringVar(&secretFlag, "node.secret", "", "Shared secret to authenticate and encrypt with")
-	cmdBootnodeRelay.Flags().StringVar(&bootnodeFlag, "node.boot", "", "Entrypoint into an existing multiplexer cluster")
-	cmdBootnodeRelay.Flags().StringVar(&bindAddrFlag, "bind.addr", "0.0.0.0", "Listener interface for remote multiplexers")
-	cmdBootnodeRelay.Flags().IntVar(&bindPortFlag, "bind.port", 4150, "Listener port for remote multiplexers")
-	cmdBootnodeRelay.Flags().StringVar(&extAddrFlag, "ext.addr", externalAddress(), "Advertised address for remote multiplexers")
-	cmdBootnodeRelay.Flags().IntVar(&extPortFlag, "ext.port", 0, "Advertised port for remote multiplexers (default = bind.port)")
-	cmdBootnodeRelay.MarkFlagRequired("node.identity")
-	cmdBootnodeRelay.MarkFlagRequired("node.secret")
+	cmdBootnode.Flags().StringVar(&identityFlag, "node.identity", "", "Unique identifier for this node across the entire cluster")
+	cmdBootnode.Flags().StringVar(&datadirFlag, "node.datadir", filepath.Join(os.Getenv("HOME"), ".minority", "<uid>"), "Folder to persist state through restarts")
+	cmdBootnode.Flags().StringVar(&secretFlag, "node.secret", "", "Shared secret to authenticate and encrypt with")
+	cmdBootnode.Flags().StringVar(&bootnodeFlag, "node.boot", "", "Entrypoint into an existing multiplexer cluster")
+	cmdBootnode.Flags().StringVar(&bindAddrFlag, "bind.addr", "0.0.0.0", "Listener interface for remote multiplexers")
+	cmdBootnode.Flags().IntVar(&bindPortFlag, "bind.port", 4150, "Listener port for remote multiplexers")
+	cmdBootnode.Flags().StringVar(&extAddrFlag, "ext.addr", externalAddress(), "Advertised address for remote multiplexers")
+	cmdBootnode.Flags().IntVar(&extPortFlag, "ext.port", 0, "Advertised port for remote multiplexers (default = bind.port)")
+	cmdBootnode.MarkFlagRequired("node.identity")
+	cmdBootnode.MarkFlagRequired("node.secret")
 
-	var cmdConsensusRelay = &cobra.Command{
+	cmdConsensus := &cobra.Command{
 		Use:   "consensus",
-		Short: "Run a multiplexer for a consensus client",
+		Short: "Run a multiplexer relay for a consensus client",
 		Run:   runRelay,
 	}
-	cmdConsensusRelay.Flags().StringVar(&identityFlag, "node.identity", "", "Unique identifier for this node across the entire cluster")
-	cmdConsensusRelay.Flags().StringVar(&datadirFlag, "node.datadir", filepath.Join(os.Getenv("HOME"), ".minority", "<uid>"), "Folder to persist state through restarts")
-	cmdConsensusRelay.Flags().StringVar(&secretFlag, "node.secret", "", "Shared secret to authenticate and encrypt with")
-	cmdConsensusRelay.Flags().StringVar(&bootnodeFlag, "node.boot", "", "Entrypoint into an existing multiplexer cluster")
-	cmdConsensusRelay.Flags().StringVar(&bindAddrFlag, "bind.addr", "0.0.0.0", "Listener interface for remote multiplexers")
-	cmdConsensusRelay.Flags().IntVar(&bindPortFlag, "bind.port", 4150, "Listener port for remote multiplexers")
-	cmdConsensusRelay.Flags().StringVar(&extAddrFlag, "ext.addr", externalAddress(), "Advertised address for remote multiplexers")
-	cmdConsensusRelay.Flags().IntVar(&extPortFlag, "ext.port", 0, "Advertised port for remote multiplexers (default = bind.port)")
-	cmdConsensusRelay.MarkFlagRequired("node.identity")
-	cmdConsensusRelay.MarkFlagRequired("node.secret")
+	cmdConsensus.Flags().StringVar(&identityFlag, "node.identity", "", "Unique identifier for this node across the entire cluster")
+	cmdConsensus.Flags().StringVar(&datadirFlag, "node.datadir", filepath.Join(os.Getenv("HOME"), ".minority", "<uid>"), "Folder to persist state through restarts")
+	cmdConsensus.Flags().StringVar(&secretFlag, "node.secret", "", "Shared secret to authenticate and encrypt with")
+	cmdConsensus.Flags().StringVar(&bootnodeFlag, "node.boot", "", "Entrypoint into an existing multiplexer cluster")
+	cmdConsensus.Flags().StringVar(&bindAddrFlag, "bind.addr", "0.0.0.0", "Listener interface for remote multiplexers")
+	cmdConsensus.Flags().IntVar(&bindPortFlag, "bind.port", 4150, "Listener port for remote multiplexers")
+	cmdConsensus.Flags().StringVar(&extAddrFlag, "ext.addr", externalAddress(), "Advertised address for remote multiplexers")
+	cmdConsensus.Flags().IntVar(&extPortFlag, "ext.port", 0, "Advertised port for remote multiplexers (default = bind.port)")
+	cmdConsensus.MarkFlagRequired("node.identity")
+	cmdConsensus.MarkFlagRequired("node.secret")
 
-	var cmdExecutionRelay = &cobra.Command{
+	cmdExecution := &cobra.Command{
 		Use:   "execution",
-		Short: "Run a multiplexer for an execution client",
+		Short: "Run a multiplexer for relay an execution client",
 		Run:   runRelay,
 	}
-	cmdExecutionRelay.Flags().StringVar(&identityFlag, "node.identity", "", "Unique identifier for this node across the entire cluster")
-	cmdExecutionRelay.Flags().StringVar(&datadirFlag, "node.datadir", filepath.Join(os.Getenv("HOME"), ".minority", "<uid>"), "Folder to persist state through restarts")
-	cmdExecutionRelay.Flags().StringVar(&secretFlag, "node.secret", "", "Shared secret to authenticate and encrypt with")
-	cmdExecutionRelay.Flags().StringVar(&bootnodeFlag, "node.boot", "", "Entrypoint into an existing multiplexer cluster")
-	cmdExecutionRelay.Flags().StringVar(&bindAddrFlag, "bind.addr", "0.0.0.0", "Listener interface for remote multiplexers")
-	cmdExecutionRelay.Flags().IntVar(&bindPortFlag, "bind.port", 4150, "Listener port for remote multiplexers")
-	cmdExecutionRelay.Flags().StringVar(&extAddrFlag, "ext.addr", externalAddress(), "Advertised address for remote multiplexers")
-	cmdExecutionRelay.Flags().IntVar(&extPortFlag, "ext.port", 0, "Advertised port for remote multiplexers (default = bind.port)")
-	cmdExecutionRelay.MarkFlagRequired("node.identity")
-	cmdExecutionRelay.MarkFlagRequired("node.secret")
+	cmdExecution.Flags().StringVar(&identityFlag, "node.identity", "", "Unique identifier for this node across the entire cluster")
+	cmdExecution.Flags().StringVar(&datadirFlag, "node.datadir", filepath.Join(os.Getenv("HOME"), ".minority", "<uid>"), "Folder to persist state through restarts")
+	cmdExecution.Flags().StringVar(&secretFlag, "node.secret", "", "Shared secret to authenticate and encrypt with")
+	cmdExecution.Flags().StringVar(&bootnodeFlag, "node.boot", "", "Entrypoint into an existing multiplexer cluster")
+	cmdExecution.Flags().StringVar(&bindAddrFlag, "bind.addr", "0.0.0.0", "Listener interface for remote multiplexers")
+	cmdExecution.Flags().IntVar(&bindPortFlag, "bind.port", 4150, "Listener port for remote multiplexers")
+	cmdExecution.Flags().StringVar(&extAddrFlag, "ext.addr", externalAddress(), "Advertised address for remote multiplexers")
+	cmdExecution.Flags().IntVar(&extPortFlag, "ext.port", 0, "Advertised port for remote multiplexers (default = bind.port)")
+	cmdExecution.MarkFlagRequired("node.identity")
+	cmdExecution.MarkFlagRequired("node.secret")
 
-	var rootCmd = &cobra.Command{Use: "minority"}
-	rootCmd.AddCommand(cmdBootnodeRelay, cmdConsensusRelay, cmdExecutionRelay)
+	cmdRelay := &cobra.Command{
+		Use:   "relay",
+		Short: "Start a multiplexer relaying Ethereum APIs",
+	}
+	cmdRelay.AddCommand(cmdBootnode, cmdConsensus, cmdExecution)
+
+	// Create the commands to merge relay instances
+	cmdMerge := &cobra.Command{
+		Use:   "merge",
+		Short: "Request merging two relay clusters",
+		Run:   runMerge,
+	}
+
+	rootCmd := &cobra.Command{Use: "minority"}
+	rootCmd.AddCommand(cmdRelay, cmdMerge)
 	rootCmd.Execute()
 }
 
@@ -128,6 +142,26 @@ func runRelay(cmd *cobra.Command, args []string) {
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, os.Interrupt)
 	<-signalCh
+}
+
+func runMerge(cmd *cobra.Command, args []string) {
+	// Configure and start the message broker
+	brokerConfig := &broker.Config{
+		Name:    identityFlag,
+		Datadir: strings.Replace(datadirFlag, "<uid>", identityFlag, -1),
+		Secret:  secretFlag,
+		Listener: &net.TCPAddr{
+			IP:   net.ParseIP(bindAddrFlag),
+			Port: bindPortFlag,
+		},
+	}
+	broker, err := broker.New(brokerConfig)
+	if err != nil {
+		log.Crit("Failed to start message broker", "err", err)
+	}
+	defer broker.Close()
+
+	panic("todo")
 }
 
 // externalAddress iterates over all the network interfaces of the machine and

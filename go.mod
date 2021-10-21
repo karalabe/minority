@@ -2,12 +2,10 @@ module github.com/karalabe/minority
 
 go 1.17
 
-//replace github.com/nsqio/nsq => /work/src/github.com/karalabe/nsq
-
 require (
 	github.com/ethereum/go-ethereum v1.10.11
 	github.com/nsqio/go-nsq v1.0.9-0.20211020185823-54583b581cf3
-	github.com/nsqio/nsq v1.2.1
+	github.com/nsqio/nsq v1.2.2-0.20211021155057-427d89391b82
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.2.1
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
